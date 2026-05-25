@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Airmedy
+Exec=airmedy %u
+Icon=airmedy
+Categories=AudioVideo;Player;
+Terminal=false
+Keywords=wails
+Version=1.0
+StartupNotify=false
+MimeType=x-scheme-handler/airmedy;

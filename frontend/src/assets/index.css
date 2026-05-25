@@ -1,0 +1,165 @@
+@import "tailwindcss";
+@config "../../tailwind.config.js";
+
+/* Enable CSS custom property transitions in WebKit/Safari (used by Wails on macOS) */
+@property --dynamic-primary {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #e11d48;
+}
+@property --dynamic-surface {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(25, 25, 25, 0.6);
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --default-contextmenu: hide;
+    --bg-main: #f4f4f5;
+    --bg-glass: rgba(255, 255, 255, 0.7);
+    --bg-glass-elevated: rgba(255, 255, 255, 0.9);
+    --border-glass: rgba(0, 0, 0, 0.1);
+
+    --primary: #e11d48;
+    --primary-gradient: linear-gradient(135deg, #e11d48 0%, #fb7185 100%);
+    --primary-foreground: #ffffff;
+    --text-main: #0a0a0a;
+    --text-muted: #52525b;
+    --text-inverse: #ffffff;
+    --accent-favorite: #ef4444;
+
+    --bg-zebra: rgba(0, 0, 0, 0.02);
+    --scrollbar-thumb: rgba(0, 0, 0, 0.2);
+    --scrollbar-thumb-hover: rgba(0, 0, 0, 0.3);
+
+    /* Fallback dynamic variables */
+    --dynamic-primary: var(--primary);
+    --dynamic-surface: var(--bg-glass);
+    --dynamic-glow: transparent;
+  }
+
+  .dark {
+    color-scheme: dark;
+    --bg-main: #18181b;
+    --bg-glass: rgba(35, 35, 38, 0.6);
+    --bg-glass-elevated: rgba(55, 55, 60, 0.4);
+    --border-glass: rgba(255, 255, 255, 0.1);
+
+    --text-main: #ffffff;
+    --text-muted: #a1a1aa;
+    --text-inverse: #000000;
+    --primary-foreground: #ffffff;
+
+    --bg-zebra: rgba(255, 255, 255, 0.02);
+    --scrollbar-thumb: rgba(255, 255, 255, 0.25);
+    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.35);
+  }
+
+  .black {
+    --bg-main: #0a0a0a;
+    --bg-glass: rgba(25, 25, 25, 0.6);
+    --bg-glass-elevated: rgba(45, 45, 45, 0.4);
+  }
+
+  html,
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    transition:
+      --dynamic-primary 1.5s ease-in-out,
+      --dynamic-surface 1.5s ease-in-out,
+      background-color 0.3s ease,
+      color 0.3s ease;
+  }
+
+  input,
+  button,
+  select,
+  textarea,
+  option,
+  optgroup {
+    font-family: inherit;
+  }
+}
+
+/* Fix WebKit rendering issues with semi-transparent backgrounds, blurs, and opacity */
+[class*="bg-"][class*="/"],
+[class*="bg-"][class*="\\["],
+[class*="backdrop-blur"],
+[class*="opacity-"]:not(.opacity-100),
+.custom-scrollbar {
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+/* Ensure backdrop-blur elements have their own stacking context */
+[class*="backdrop-blur"] {
+  isolation: isolate;
+}
+
+img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+/* Custom Scrollbar Global */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 10px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: content-box;
+}
+
+/* Scrollbar Utility Classes */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Firefox support */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}

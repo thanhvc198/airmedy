@@ -1,0 +1,101 @@
+version: '3'
+
+includes:
+  common: ./build/Taskfile.yml
+  windows: ./build/windows/Taskfile.yml
+  darwin: ./build/darwin/Taskfile.yml
+  linux: ./build/linux/Taskfile.yml
+
+vars:
+  APP_NAME: "airmedy"
+  BIN_DIR: "bin"
+  VITE_PORT: '{{.WAILS_VITE_PORT | default 9245}}'
+
+tasks:
+  build:
+    summary: Builds the application
+    cmds:
+      - task: "{{OS}}:build"
+
+  package:
+    summary: Packages a production build of the application
+    cmds:
+      - task: "{{OS}}:package"
+
+  run:
+    summary: Runs the application
+    cmds:
+      - task: "{{OS}}:run"
+
+  dev:
+    summary: Runs the application in development mode
+    cmds:
+      - wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}
+
+  setup:hooks:
+    summary: Installs git hooks
+    cmds:
+      - mkdir -p .git/hooks
+      - cp scripts/git-hooks/commit-msg .git/hooks/commit-msg
+      - chmod +x .git/hooks/commit-msg
+
+  setup:docker:
+    summary: Builds Docker image for cross-compilation (~800MB download)
+    cmds:
+      - task: common:setup:docker
+
+  build:server:
+    summary: Builds the application in server mode (no GUI, HTTP server only)
+    cmds:
+      - task: common:build:server
+
+  run:server:
+    summary: Runs the application in server mode
+    cmds:
+      - task: common:run:server
+
+  build:docker:
+    summary: Builds a Docker image for server mode deployment
+    cmds:
+      - task: common:build:docker
+
+  run:docker:
+    summary: Builds and runs the Docker image
+    cmds:
+      - task: common:run:docker
+
+  test:go:
+    summary: Runs all Go unit tests
+    cmds:
+      - go test ./...
+
+  test:ui:
+    summary: Runs all frontend tests
+    dir: frontend
+    cmds:
+      - pnpm test
+
+  test:
+    summary: Runs all tests (Go and UI)
+    cmds:
+      - task: test:go
+      - task: test:ui
+
+  lint:go:
+    summary: Lints Go code
+    cmds:
+      - golangci-lint run
+
+  lint:ui:
+    summary: Lints frontend code
+    dir: frontend
+    cmds:
+      - pnpm lint
+
+  verify:
+    summary: Runs all tests and linters to verify the project state
+    cmds:
+      - task: test:go
+      - task: lint:go
+      - task: test:ui
+      - task: lint:ui
