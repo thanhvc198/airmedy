@@ -39,6 +39,7 @@ type Service struct {
 	currentVersion string
 	logger         *slog.Logger
 	pending        *pendingRelease
+	stagingPath    string // path to staged .app/.exe waiting to replace current on restart
 }
 
 type pendingRelease struct {
@@ -160,25 +161,17 @@ func (s *Service) DownloadAndApply(ctx context.Context, progress ProgressFunc) e
 		return fmt.Errorf("read temp file: %w", err)
 	}
 
-	exeName := "airmedy"
-	if runtime.GOOS == "windows" {
-		exeName = "airmedy.exe"
-	}
-
-	binary, err := extractBinary(archiveData, pending.assetURL, exeName)
-	if err != nil {
-		return fmt.Errorf("extract binary: %w", err)
-	}
-
 	exe, err := os.Executable()
 	if err != nil {
 		return fmt.Errorf("get executable path: %w", err)
 	}
 
 	s.logger.Info("applying update", "target", exe, "version", pending.info.Version)
-	if err := update.Apply(bytes.NewReader(binary), update.Options{TargetPath: exe}); err != nil {
+	stagingPath, err := s.applyUpdate(archiveData, pending.assetURL, exe)
+	if err != nil {
 		return fmt.Errorf("apply update: %w", err)
 	}
+	s.stagingPath = stagingPath
 
 	if err := postUpdate(exe, pending.info.Version); err != nil {
 		s.logger.Warn("post-update steps failed (update still applied)", "error", err)
@@ -199,11 +192,12 @@ func (s *Service) GetRestartInfo() (bundlePath string, exe string, err error) {
 }
 
 // PrepareRestart schedules the app relaunch. On Darwin the bundle is
-// codesigned after exit; on other platforms it just launches directly.
+// replaced with the staged update, codesigned, and reopened after exit.
+// On other platforms the staged binary is already in place; just relaunch.
 func (s *Service) PrepareRestart(bundlePath, exe string) {
 	pid := os.Getpid()
 	if bundlePath != "" {
-		restartWithCodesign(bundlePath, pid)
+		restartWithCodesign(bundlePath, s.stagingPath, pid)
 		return
 	}
 	// Non-bundle fallback: launch exe directly.
@@ -211,6 +205,23 @@ func (s *Service) PrepareRestart(bundlePath, exe string) {
 		cmd := exec.Command(exe)
 		_ = cmd.Start()
 	}
+}
+
+// applyBinaryUpdate extracts the platform binary from the archive and
+// replaces the current executable in-place using go-update.
+func applyBinaryUpdate(archiveData []byte, assetURL, exe string) error {
+	exeName := "airmedy"
+	if runtime.GOOS == "windows" {
+		exeName = "airmedy.exe"
+	}
+	binary, err := extractBinary(archiveData, assetURL, exeName)
+	if err != nil {
+		return fmt.Errorf("extract binary: %w", err)
+	}
+	if err := update.Apply(bytes.NewReader(binary), update.Options{TargetPath: exe}); err != nil {
+		return fmt.Errorf("apply binary: %w", err)
+	}
+	return nil
 }
 
 // --- GitHub API ---
