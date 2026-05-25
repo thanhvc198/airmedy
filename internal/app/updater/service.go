@@ -73,6 +73,7 @@ func (s *Service) CheckForUpdate(ctx context.Context) (*UpdateInfo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("fetch latest release: %w", err)
 	}
+	s.logger.Info("latest release fetched", "tag", rel.TagName)
 
 	tagVersion := strings.TrimPrefix(rel.TagName, "v")
 	latest, err := semver.Parse(tagVersion)
@@ -87,13 +88,16 @@ func (s *Service) CheckForUpdate(ctx context.Context) (*UpdateInfo, error) {
 	}
 
 	if !latest.GT(current) {
+		s.logger.Info("already up to date", "current", s.currentVersion, "latest", tagVersion)
 		return nil, nil
 	}
+	s.logger.Info("update available", "current", s.currentVersion, "latest", tagVersion)
 
 	asset := findPlatformAsset(rel.Assets)
 	if asset == nil {
 		return nil, fmt.Errorf("no release asset found for %s/%s", runtime.GOOS, runtime.GOARCH)
 	}
+	s.logger.Info("release asset found", "asset", asset.Name)
 
 	checksum, err := fetchChecksumForAsset(ctx, rel.Assets, asset.Name)
 	if err != nil {

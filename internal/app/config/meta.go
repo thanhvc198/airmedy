@@ -1,11 +1,11 @@
 package config
 
 const (
-	AppName     = "Airmedy"
-	AppDesc     = "A lightweight offline music player for macOS, Windows and Linux."
-	Version     = "0.0.14"
-	RepoOwner   = "thanhvc198"
-	RepoName    = "airmedy"
-	GitHubURL   = "https://github.com/" + RepoOwner + "/" + RepoName
-	LicenseURL  = GitHubURL + "/blob/master/LICENSE"
+	AppName    = "Airmedy"
+	AppDesc    = "A lightweight offline music player for macOS, Windows and Linux."
+	Version    = "0.0.15"
+	RepoOwner  = "thanhvc198"
+	RepoName   = "airmedy"
+	GitHubURL  = "https://github.com/" + RepoOwner + "/" + RepoName
+	LicenseURL = GitHubURL + "/blob/master/LICENSE"
 )

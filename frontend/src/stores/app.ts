@@ -60,7 +60,6 @@ export const useAppStore = defineStore('app', () => {
       }
 
       // Check for updates on startup if enabled
-      console.log('[updater] autoCheckUpdate:', autoCheckUpdate.value)
       if (autoCheckUpdate.value) {
         checkForUpdate()
       }
@@ -70,29 +69,19 @@ export const useAppStore = defineStore('app', () => {
   }
 
   const checkForUpdate = async () => {
-    if (isCheckingUpdate.value) {
-      console.log('[updater] already checking, skip')
-      return
-    }
+    if (isCheckingUpdate.value) return
     isCheckingUpdate.value = true
-    console.log('[updater] checkForUpdate start')
     try {
       const info = await UpdaterService.CheckForUpdate()
-      console.log('[updater] CheckForUpdate result:', info)
       updateInfo.value = info
       updateChecked.value = true
       if (info) {
-        console.log('[updater] update available, opening dialog')
         isUpdateDialogOpen.value = true
-      } else {
-        console.log('[updater] no update available')
       }
     } catch (err) {
-      console.error('[updater] CheckForUpdate error:', err)
       throw err
     } finally {
       isCheckingUpdate.value = false
-      console.log('[updater] checkForUpdate done')
     }
   }
 
