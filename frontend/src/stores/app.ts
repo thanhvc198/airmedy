@@ -24,6 +24,7 @@ export const useAppStore = defineStore('app', () => {
   const isUpdating = ref(false)
   const updateApplied = ref(false)
   const updateProgress = ref(0)
+  const updateChecked = ref(false)
 
   const applyTheme = (newTheme: 'system' | 'light' | 'dark' | 'black') => {
     const root = document.documentElement
@@ -59,6 +60,7 @@ export const useAppStore = defineStore('app', () => {
       }
 
       // Check for updates on startup if enabled
+      console.log('[updater] autoCheckUpdate:', autoCheckUpdate.value)
       if (autoCheckUpdate.value) {
         checkForUpdate()
       }
@@ -68,18 +70,29 @@ export const useAppStore = defineStore('app', () => {
   }
 
   const checkForUpdate = async () => {
-    if (isCheckingUpdate.value) return
+    if (isCheckingUpdate.value) {
+      console.log('[updater] already checking, skip')
+      return
+    }
     isCheckingUpdate.value = true
+    console.log('[updater] checkForUpdate start')
     try {
       const info = await UpdaterService.CheckForUpdate()
+      console.log('[updater] CheckForUpdate result:', info)
       updateInfo.value = info
+      updateChecked.value = true
       if (info) {
+        console.log('[updater] update available, opening dialog')
         isUpdateDialogOpen.value = true
+      } else {
+        console.log('[updater] no update available')
       }
     } catch (err) {
-      console.error('Failed to check for updates:', err)
+      console.error('[updater] CheckForUpdate error:', err)
+      throw err
     } finally {
       isCheckingUpdate.value = false
+      console.log('[updater] checkForUpdate done')
     }
   }
 
@@ -215,6 +228,7 @@ export const useAppStore = defineStore('app', () => {
     isUpdating,
     updateApplied,
     updateProgress,
+    updateChecked,
     loadSettings,
     checkForUpdate,
     applyUpdate,

@@ -18,14 +18,12 @@ import (
 	"runtime"
 	"strings"
 
+	"airmedy/internal/app/config"
+
 	"github.com/blang/semver"
 	update "github.com/inconshreveable/go-update"
 )
 
-const (
-	repoOwner = "misa198"
-	repoName  = "airmedy"
-)
 
 type UpdateInfo struct {
 	Version      string `json:"version"`
@@ -198,7 +196,7 @@ func (s *Service) GetRestartInfo() (bundlePath string, exe string, err error) {
 // --- GitHub API ---
 
 func fetchLatestRelease(ctx context.Context) (*ghRelease, error) {
-	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", repoOwner, repoName)
+	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", config.RepoOwner, config.RepoName)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
