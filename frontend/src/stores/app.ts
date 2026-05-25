@@ -73,6 +73,9 @@ export const useAppStore = defineStore('app', () => {
     try {
       const info = await UpdaterService.CheckForUpdate()
       updateInfo.value = info
+      if (info) {
+        isUpdateDialogOpen.value = true
+      }
     } catch (err) {
       console.error('Failed to check for updates:', err)
     } finally {
