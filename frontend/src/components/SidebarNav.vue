@@ -21,7 +21,7 @@ const { t } = useI18n()
 const playerStore = usePlayerStore()
 
 const navItems = computed(() => [
-  { name: t('sidebar.home'), icon: Home, to: '/' },
+  { name: "t('sidebar.home')", icon: Home, to: '/' },
   { name: t('sidebar.recently_added'), icon: Clock, to: '/recently-added' },
   { name: t('sidebar.artists'), icon: Users, to: '/artists' },
   { name: t('sidebar.albums'), icon: Disc, to: '/albums' },
