@@ -153,8 +153,12 @@ jobs:
         if: runner.os == 'Darwin'
         uses: actions/cache@v4
         with:
-          path: internal/infra/audio/sfb_libs
+          path: |
+            internal/infra/audio/sfb_libs
+            internal/infra/audio/sfb_build
           key: sfb-${{ runner.os }}-${{ hashFiles('scripts/build-sfbaudioengine-darwin.sh') }}
+          restore-keys: |
+            sfb-${{ runner.os }}-
 
       - name: Cache Miniaudio (Windows and Linux)
         id: cache-miniaudio
