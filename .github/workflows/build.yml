@@ -180,7 +180,7 @@ jobs:
         run: bash scripts/build-ffmpeg-linux.sh
 
       - name: Build SFB Audio Engine (Darwin)
-        if: runner.os == 'Darwin' && steps.cache-sfb.outputs.cache-hit != 'true'
+        if: runner.os == 'Darwin' && !hashFiles('internal/infra/audio/sfb_libs/SFBAudioEngine.xcframework/Info.plist')
         run: bash scripts/build-sfbaudioengine-darwin.sh
 
       - name: Fetch miniaudio (Windows and Linux)

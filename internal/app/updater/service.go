@@ -14,6 +14,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -195,6 +196,21 @@ func (s *Service) GetRestartInfo() (bundlePath string, exe string, err error) {
 	}
 	bundlePath = getBundlePath(exe)
 	return bundlePath, exe, nil
+}
+
+// PrepareRestart schedules the app relaunch. On Darwin the bundle is
+// codesigned after exit; on other platforms it just launches directly.
+func (s *Service) PrepareRestart(bundlePath, exe string) {
+	pid := os.Getpid()
+	if bundlePath != "" {
+		restartWithCodesign(bundlePath, pid)
+		return
+	}
+	// Non-bundle fallback: launch exe directly.
+	if exe != "" {
+		cmd := exec.Command(exe)
+		_ = cmd.Start()
+	}
 }
 
 // --- GitHub API ---

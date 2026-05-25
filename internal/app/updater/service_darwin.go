@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-// postUpdate updates Info.plist version strings, re-signs the bundle ad-hoc,
-// and removes the quarantine attribute after the binary is swapped in.
+// postUpdate updates Info.plist version strings after the binary is swapped in.
+// Codesigning is deferred to restartWithCodesign so it runs after the process exits.
 func postUpdate(exe, newVersion string) error {
 	macosDir := filepath.Dir(exe)
 	if filepath.Base(macosDir) != "MacOS" {
@@ -30,16 +30,22 @@ func postUpdate(exe, newVersion string) error {
 		return fmt.Errorf("update CFBundleVersion: %w", err)
 	}
 
-	// Re-sign ad-hoc so macOS accepts the new binary.
-	if err := exec.Command("codesign", "--force", "--deep", "--sign", "-", bundlePath).Run(); err != nil {
-		return fmt.Errorf("ad-hoc codesign: %w", err)
-	}
-
-	// Remove quarantine flag set by macOS on downloaded files.
-	// Ignore error — flag may not be present.
-	_ = exec.Command("xattr", "-d", "com.apple.quarantine", bundlePath).Run()
-
 	return nil
+}
+
+// restartWithCodesign launches a background shell that waits for the current
+// process to exit, then ad-hoc signs the bundle, removes quarantine, and
+// reopens the app. Must be called just before the process quits.
+func restartWithCodesign(bundlePath string, pid int) {
+	script := fmt.Sprintf(
+		`while kill -0 %d 2>/dev/null; do sleep 0.1; done
+codesign --force --deep --sign - %q
+xattr -d com.apple.quarantine %q 2>/dev/null || true
+open %q`,
+		pid, bundlePath, bundlePath, bundlePath,
+	)
+	cmd := exec.Command("sh", "-c", script)
+	_ = cmd.Start()
 }
 
 // getBundlePath returns the .app bundle path containing exe, or "" if not inside a bundle.

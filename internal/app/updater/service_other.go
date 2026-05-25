@@ -9,3 +9,5 @@ func postUpdate(_ string, _ string) error {
 func getBundlePath(_ string) string {
 	return ""
 }
+
+func restartWithCodesign(_ string, _ int) {}
